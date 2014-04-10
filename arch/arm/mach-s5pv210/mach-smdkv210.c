@@ -1427,7 +1427,7 @@ static struct mpu3050_platform_data mpu_data = {
 static struct i2c_board_info smdkv210_i2c_devs0[] __initdata = {
 	{ I2C_BOARD_INFO("24c08", 0x50), },     /* Samsung S524AD0XD1 */
 	{ I2C_BOARD_INFO("wm8580", 0x1b), },
-	{ I2C_BOARD_INFO("Goodix-TS",0x5d),}, // gt813
+	{ I2C_BOARD_INFO("Goodix-TS",0x5d),}, // gt813 or gt9xx
 	#if defined(CONFIG_MPU_SENSORS_MPU3050) || defined(CONFIG_MPU_SENSORS_MPU3050_MODULE)
 	// liang
 	{

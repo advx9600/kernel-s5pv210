@@ -25,6 +25,7 @@
 #endif
 
 #include "ov3640.h"
+#include "ov3640_firmware.c"
 
 #define OV3640_DRIVER_NAME	"OV3640"
 
@@ -88,7 +89,8 @@ struct ov3640_enum_framesize {
 
 struct ov3640_enum_framesize ov3640_framesize_list[] = {
  //   { OV3640_PREVIEW_SVGA, 800, 600 }
- { OV3640_PREVIEW_SVGA, 640, 480 }
+// { OV3640_PREVIEW_SVGA, 640, 480 }
+{ OV3640_PREVIEW_SVGA, 1024, 768 }
 };
 
 
@@ -481,6 +483,7 @@ static int ov3640_s_ctrl(struct v4l2_subdev *sd, struct v4l2_control *ctrl)
 	struct i2c_client *client = v4l2_get_subdevdata(sd);
 	struct ov3640_state *state = to_state(sd);
 	int err = 0;
+	int i=0;
 	int value = ctrl->value;
 
 	switch (ctrl->id) {
@@ -562,6 +565,17 @@ static int ov3640_s_ctrl(struct v4l2_subdev *sd, struct v4l2_control *ctrl)
 		(unsigned char *) ov3640_regs_ev_bias[value],
 			sizeof(ov3640_regs_ev_bias[value]));
 		break;
+	#if 1  // dafeng
+	case 134217847:  
+                printk("start set autofocus\n");
+		for (i=0;i<sizeof(ov3640_afc_init_reg)/sizeof(ov3640_afc_init_reg[0]);i++)
+                {
+                        err = ov3640_i2c_write(sd, ov3640_afc_init_reg[i],sizeof(ov3640_afc_init_reg[i]));
+                        if (err < 0) printk("set ov3640_i2c_write failed!\n");
+		}
+                printk("end set autofocus\n");
+                break;
+	#endif
 	default:
 		dev_err(&client->dev, "%s: no such control\n", __func__);
 		/* err = -EINVAL; */

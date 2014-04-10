@@ -741,8 +741,8 @@ static struct platform_device smdkv210_lcd_lte480wv = {
 };
 
 static struct s3cfb_lcd lte480wv = {
-	.width	= 800,
-	.height	= 480,
+	.width	= S5PV210_LCD_WIDTH,
+	.height	= S5PV210_LCD_HEIGHT,
 	.bpp	= 24,
 	.freq	= 40,
 

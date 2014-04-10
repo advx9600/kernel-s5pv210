@@ -226,6 +226,11 @@ config TOUCHSCREEN_REALARM_OLD
 	help
 	  Say Y here to enable the driver realarm old multi-touchscreen.
 	  
+config TOUCHSCREEN_GT813
+	tristate "GT813 touchscreen driver"
+	depends on CPU_S5PV210
+	default n
+
 config TOUCHSCREEN_REALARM__FT5X0X
 	tristate "realarm ft5x0x multi-touch driver"
 	depends on CPU_S5PV210

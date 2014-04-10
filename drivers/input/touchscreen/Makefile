@@ -65,3 +65,4 @@ obj-$(CONFIG_TOUCHSCREEN_EGALAX)        += egalax_i2c.o
 obj-$(CONFIG_TOUCHSCREEN_S3C)           += ts-s3c.o
 obj-$(CONFIG_TOUCHSCREEN_REALARM__FT5X0X) += ft5x0x_i2c_ts.o
 obj-$(CONFIG_TOUCHSCREEN_REALARM_OLD) += realarm_ts.o
+obj-$(CONFIG_TOUCHSCREEN_GT813) += gt813/gt813_827_828.o gt813/goodix_tool.o gt813/gt813_827_828_update.o

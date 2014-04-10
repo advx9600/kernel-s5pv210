@@ -966,6 +966,21 @@ static int wm9713_hifi_hw_params(struct snd_pcm_substream *substream,
 #else
 	ac97_write(codec, AC97_VIDEO, 0xd612);
 #endif
+  #if 1  // dafeng
+	#if 1
+        // make sound to speaker
+        ac97_write(codec, 0x0C, 0x6000); // only speak
+        ac97_write(codec, 0x1C, 0x12aa); // headphone mix to speak  write 0x12aa is prefered 0x1200 may save sound like pipi
+        //record ALC function
+        #endif
+        #if 0
+        ac97_write(codec, 0x62, 0xFEC0); // ALC
+        ac97_write(codec, 0x60, 0xF832); // ALC
+        #else
+        ac97_write(codec, 0x62, 0x0000);
+        ac97_write(codec, 0x12, 0x3F00);
+        #endif
+  #endif 
 	return 0;
 }
 static int wm9713_pcm_hw_params(struct snd_pcm_substream *substream,

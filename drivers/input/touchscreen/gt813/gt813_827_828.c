@@ -1231,7 +1231,7 @@ static const struct i2c_device_id goodix_ts_id[] = {
 static struct i2c_driver goodix_ts_driver = {
     .probe      = goodix_ts_probe,
     .remove     = goodix_ts_remove,
-#ifndef CONFIG_HAS_EARLYSUSPEND
+#ifdef CONFIG_HAS_EARLYSUSPEND
     .suspend    = goodix_ts_early_suspend,
     .resume     = goodix_ts_later_resume,
 #endif

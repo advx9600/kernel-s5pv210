@@ -236,6 +236,11 @@ config TOUCHSCREEN_GT9XX
 	depends on CPU_S5PV210
 	default n
 
+config TOUCHSCREEN_NVT
+	tristate "NVT touchscreen driver"
+	depends on CPU_S5PV210
+	default n
+
 config TOUCHSCREEN_REALARM__FT5X0X
 	tristate "realarm ft5x0x multi-touch driver"
 	depends on CPU_S5PV210

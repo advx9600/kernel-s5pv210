@@ -539,8 +539,8 @@ static struct i2c_board_info i2c_devs5[] __initdata = {
 
 
 #ifdef CONFIG_FB_S3C_LTE480WV
-#define S5PV210_LCD_WIDTH 800
-#define S5PV210_LCD_HEIGHT 480
+#define S5PV210_LCD_WIDTH 1024
+#define S5PV210_LCD_HEIGHT 600
 #define NUM_BUFFER 4
 #endif
 
@@ -744,7 +744,7 @@ static struct s3cfb_lcd lte480wv = {
 	.width	= 800,
 	.height	= 480,
 	.bpp	= 24,
-	.freq	= 70,
+	.freq	= 40,
 
 	.timing = {
 		.h_fp	= 210,

@@ -552,4 +552,8 @@ source "drivers/misc/lis3lv02d/Kconfig"
 source "drivers/misc/carma/Kconfig"
 source "drivers/misc/mpu3050/Kconfig"
 
+config PIN_SELF_DEF
+        bool "self define drivers"
+        default y
+
 endif # MISC_DEVICES

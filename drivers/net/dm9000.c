@@ -54,6 +54,7 @@
 static int watchdog = 5000;
 module_param(watchdog, int, 0400);
 MODULE_PARM_DESC(watchdog, "transmit timeout in milliseconds");
+static char* gAddress=NULL;
 
 /* DM9000 register address locking.
  *
@@ -1348,6 +1349,7 @@ dm9000_probe(struct platform_device *pdev)
 	int ret = 0;
 	int iosize;
 	int i;
+	char strbuf[30];
 	u32 id_val;
 
 	/* Init network device */
@@ -1549,6 +1551,20 @@ dm9000_probe(struct platform_device *pdev)
 	for (i = 0; i < 6; i += 2)
 		dm9000_read_eeprom(db, i / 2, ndev->dev_addr+i);
 
+	if (!is_valid_ether_addr(ndev->dev_addr) && gAddress!=NULL){
+                mac_src="uboot data";
+                strncpy(strbuf,gAddress,sizeof(strbuf));
+                for (i=0;i<17;i++)
+                {
+                        if(strbuf[i]>='A'&&strbuf[i]<='Z') strbuf[i]=(strbuf[i]-'A'&0xf)+10;
+                        else if (strbuf[i]>='a' && strbuf[i]<='z') strbuf[i]=(strbuf[i]-'a'&0xf)+10;
+                        else strbuf[i]=(strbuf[i]-'0'&0xf);
+
+                }
+                for (i=0;i<6;i++)
+                        ndev->dev_addr[i]=((strbuf[i*3]<<4)&0xf0)+(strbuf[i*3+1]&0xf);
+        }
+
 	if (!is_valid_ether_addr(ndev->dev_addr) && pdata != NULL) {
 		mac_src = "platform data";
 		memcpy(ndev->dev_addr, pdata->dev_addr, 6);
@@ -1680,8 +1696,15 @@ dm9000_cleanup(void)
 {
 	platform_driver_unregister(&dm9000_driver);
 }
+static int __init param_mac_setup(char *str)
+{
+        printk("mac:%s\n",str);
+        gAddress=str;
+        return 0;
+}
 
 module_init(dm9000_init);
+__setup("mac=", param_mac_setup); // must add here after module_init
 module_exit(dm9000_cleanup);
 
 MODULE_AUTHOR("Sascha Hauer, Ben Dooks");

@@ -5,6 +5,9 @@
 #include <linux/seq_file.h>
 #include <linux/utsname.h>
 
+/*
+	1.0 增加版本管理
+*/
 static int version_proc_show(struct seq_file *m, void *v)
 {
 	seq_printf(m, linux_proc_banner,
@@ -14,9 +17,20 @@ static int version_proc_show(struct seq_file *m, void *v)
 	return 0;
 }
 
+static int android_kernel_proc_show(struct seq_file *m, void *v)
+{
+	seq_printf(m, "%s","1.0");
+	return 0;
+}
+
 static int version_proc_open(struct inode *inode, struct file *file)
 {
 	return single_open(file, version_proc_show, NULL);
+}
+
+static int android_kernel_proc_open(struct inode *inode, struct file *file)
+{
+	return single_open(file, android_kernel_proc_show, NULL);
 }
 
 static const struct file_operations version_proc_fops = {
@@ -26,9 +40,17 @@ static const struct file_operations version_proc_fops = {
 	.release	= single_release,
 };
 
+static const struct file_operations android_kernel_proc_fops = {
+	.open		= android_kernel_proc_open,
+	.read		= seq_read,
+	.llseek		= seq_lseek,
+	.release	= single_release,
+};
+
 static int __init proc_version_init(void)
 {
 	proc_create("version", 0, NULL, &version_proc_fops);
+	proc_create("android_kernel", 0, NULL, &android_kernel_proc_fops);
 	return 0;
 }
 module_init(proc_version_init);

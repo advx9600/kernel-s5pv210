@@ -147,9 +147,9 @@ int main()
   printf("lastestVer:%s\n",lastestVer);
   
   char kernelVer[30];
-  sprintf(kernelVer,"%s_%s",gitVer,lastestVer);
+  sprintf(kernelVer,"%s %s",gitVer,lastestVer);
 
-  if (setVersion(lastestVer)){
+  if (setVersion(kernelVer)){
 	printf("setVersion failed!\n");
   }
 

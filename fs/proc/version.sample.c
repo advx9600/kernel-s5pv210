@@ -17,9 +17,11 @@ static int version_proc_show(struct seq_file *m, void *v)
 	return 0;
 }
 
+static char gUbootVer[20];
+
 static int android_kernel_proc_show(struct seq_file *m, void *v)
 {
-	seq_printf(m, "%s","1.0");
+	seq_printf(m, "kernel:?,u-boot:%s",gUbootVer);
 	return 0;
 }
 
@@ -53,4 +55,12 @@ static int __init proc_version_init(void)
 	proc_create("android_kernel", 0, NULL, &android_kernel_proc_fops);
 	return 0;
 }
+
+static int __init param_uboot_ver_setup(char *str)
+{
+ strcpy(gUbootVer,str);
+ return 0;
+}
+
 module_init(proc_version_init);
+__setup("my_version=", param_uboot_ver_setup);

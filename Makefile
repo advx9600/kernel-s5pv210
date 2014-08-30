@@ -41,6 +41,11 @@ export LC_COLLATE LC_NUMERIC
 # To put more focus on warnings, be less verbose as default
 # Use 'make V=1' to see the full commands
 
+MY_DIR=my_dir
+MY_DIR_BIN=$(MY_DIR)/bin
+MY_DIR_SOURCE=$(MY_DIR)/source
+
+
 ifeq ("$(origin V)", "command line")
   KBUILD_VERBOSE = $(V)
 endif
@@ -144,7 +149,7 @@ ifeq ($(skip-makefile),)
 # but instead _all depend on modules
 PHONY += all
 ifeq ($(KBUILD_EXTMOD),)
-_all: all
+_all:my_ver_update all
 else
 _all: modules
 endif
@@ -1566,3 +1571,13 @@ FORCE:
 # Declare the contents of the .PHONY variable as phony.  We keep that
 # information in a variable so we can use it in if_changed and friends.
 .PHONY: $(PHONY)
+
+my_ver_mk_bin_dir :=
+ifneq ($(MY_DIR_BIN),$(wildcard $(MY_DIR_BIN)))
+my_ver_mk_bin_dir := mkdir $(MY_DIR_BIN) &&
+endif
+
+my_ver_update:
+	$(my_ver_mk_bin_dir) gcc $(MY_DIR_SOURCE)/my_version_kernel_update.c -o $(MY_DIR_BIN)/my_kernel_update
+	$(MY_DIR_BIN)/my_kernel_update
+

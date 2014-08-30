@@ -19,7 +19,7 @@ static int version_proc_show(struct seq_file *m, void *v)
 
 static int android_kernel_proc_show(struct seq_file *m, void *v)
 {
-	seq_printf(m, "%s","1.0 white10");
+	seq_printf(m, "%s","1.0");
 	return 0;
 }
 

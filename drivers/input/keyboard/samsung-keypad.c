@@ -56,6 +56,10 @@
 /* SAMSUNG_KEYIFFC */
 #define SAMSUNG_KEYIFFC_MASK			(0x3ff << 0)
 
+#ifdef CONFIG_PM
+#undef CONFIG_PM
+#endif
+
 enum samsung_keypad_type {
 	KEYPAD_TYPE_SAMSUNG,
 	KEYPAD_TYPE_S5PV210,
@@ -74,6 +78,37 @@ struct samsung_keypad {
 	unsigned int row_state[SAMSUNG_MAX_COLS];
 	unsigned short keycodes[];
 };
+
+static volatile unsigned int* Pin1;
+
+static int read_reg(const char* name,int addr)
+{
+        int val=0;
+        Pin1=ioremap(addr,4);
+        val = *Pin1;
+        iounmap(Pin1);
+        return val;
+}
+
+#if 0
+static int print_reg(const char* name,int addr)
+{
+        int val=0;
+        Pin1=ioremap(addr,4);
+        val = *Pin1;
+        printk("%s 0x%x:0x%x\n",name,addr,val);
+        iounmap(Pin1);
+        return val;
+}
+#endif
+
+static void write_reg(const char* name,int addr,int val)
+{
+        Pin1=ioremap(addr,4);
+        printk("write %s 0x%x:0x%x=0x%x\n",name,addr,*Pin1,val);
+        *Pin1 = val;
+        iounmap(Pin1);
+}
 
 static int samsung_keypad_is_s5pv210(struct device *dev)
 {
@@ -134,9 +169,11 @@ static bool samsung_keypad_report(struct samsung_keypad *keypad,
 
 			pressed = row_state[col] & (1 << row);
 
-			dev_dbg(&keypad->input_dev->dev,
-				"key %s, row: %d, col: %d\n",
-				pressed ? "pressed" : "released", row, col);
+//			dev_dbg(&keypad->input_dev->dev,
+//				"key %s, row: %d, col: %d\n",
+//				pressed ? "pressed" : "released", row, col);
+			printk("key %s, row: %d, col: %d\n",
+                                pressed ? "pressed" : "released", row, col);
 
 			val = MATRIX_SCAN_CODE(row, col, keypad->row_shift);
 			if(keypad->keycodes[val] != KEY_RESERVED) {
@@ -170,7 +207,7 @@ static irqreturn_t samsung_keypad_irq(int irq, void *dev_id)
 		key_down = samsung_keypad_report(keypad, row_state);
 		if (key_down)
 			wait_event_timeout(keypad->wait, keypad->stopped,
-					   msecs_to_jiffies(50));
+					   msecs_to_jiffies(20));
 
 	} while (key_down && !keypad->stopped);
 
@@ -237,6 +274,32 @@ static void samsung_keypad_close(struct input_dev *input_dev)
 	samsung_keypad_stop(keypad);
 }
 
+static void set_no_key_pad_config(const char* name,int addr,int start,int num)
+{
+	int i;
+	int val = read_reg(name,addr);
+	for (i=start;i<start+num;i++)
+	{
+	  if (((val>>4*i)&0xf) == 0x3){
+		val ^= 0x1<<4*i;
+	  }
+	}
+	write_reg(name,addr,val);
+}
+
+static void other_gpio_reconfig(void)
+{
+	set_no_key_pad_config("GPH2CON",0xE0200C40,0,8);
+
+	set_no_key_pad_config("GPH3CON",0xE0200C60,0,8);
+	
+	set_no_key_pad_config("GPJ1CON",0xE0200260,5,1);
+
+	set_no_key_pad_config("GPHJ2CON",0xE0200280,0,8);
+
+	set_no_key_pad_config("GPHJ3CON",0xE02002A0,0,7);
+}
+
 static int __devinit samsung_keypad_probe(struct platform_device *pdev)
 {
 	const struct samsung_keypad_platdata *pdata;
@@ -267,6 +330,7 @@ static int __devinit samsung_keypad_probe(struct platform_device *pdev)
 		return -EINVAL;
 
 	/* initialize the gpio */
+	other_gpio_reconfig();
 	if (pdata->cfg_gpio)
 		pdata->cfg_gpio(pdata->rows, pdata->cols);
 
@@ -345,6 +409,8 @@ static int __devinit samsung_keypad_probe(struct platform_device *pdev)
 
 	device_init_wakeup(&pdev->dev, pdata->wakeup);
 	platform_set_drvdata(pdev, keypad);
+
+	samsung_keypad_start(keypad);
 	return 0;
 
 err_free_irq:

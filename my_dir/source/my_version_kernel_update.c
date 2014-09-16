@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "my_total_h.h"
 
 
 static char* getLastestVer(const char* inFile,char* ver)
@@ -128,16 +129,30 @@ static int setVersion(const char* ver)
   return 0;
 }
 
-int main()
+int main(int argc,char* argv[])
 {
-  char gitVer[20];
-  if (getCurGitVer(gitVer) == NULL){
+  if (argc != 2){
+	printf("argc err\ninitVer(1.0.00)\n");
+	return -1;
+  }
+
+  const char* initVer=argv[1];
+
+  char gitBranch[20];
+  if (getCurGitVer(gitBranch) == NULL){
 	printf("getCurGitVer failed!\n");
 	return -1;
   }
 
   char openVerName[20];
-  sprintf(openVerName,"%s_version.txt",gitVer);
+  sprintf(openVerName,"%s_version.txt",gitBranch);
+
+  if (!is_need_update_ver(openVerName)){
+	printf("don't need update\n");
+	return 0;
+  }
+
+  update_txt_file_ver(gitBranch,initVer,openVerName);
 
   char lastestVer[20];
   if (getLastestVer(openVerName,lastestVer) == NULL){
@@ -147,7 +162,7 @@ int main()
   printf("lastestVer:%s\n",lastestVer);
   
   char kernelVer[30];
-  sprintf(kernelVer,"%s %s",gitVer,lastestVer);
+  sprintf(kernelVer,"%s %s",gitBranch,lastestVer);
 
   if (setVersion(kernelVer)){
 	printf("setVersion failed!\n");

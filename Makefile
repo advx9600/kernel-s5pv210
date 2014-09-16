@@ -1577,7 +1577,9 @@ ifneq ($(MY_DIR_BIN),$(wildcard $(MY_DIR_BIN)))
 my_ver_mk_bin_dir := mkdir $(MY_DIR_BIN) &&
 endif
 
+my_source_file := $(MY_DIR_SOURCE)/my_version_kernel_update.c
+my_source_file += $(MY_DIR_SOURCE)/my_version_check.c
 my_ver_update:
-	$(my_ver_mk_bin_dir) gcc $(MY_DIR_SOURCE)/my_version_kernel_update.c -o $(MY_DIR_BIN)/my_kernel_update
-	$(MY_DIR_BIN)/my_kernel_update
+	$(my_ver_mk_bin_dir) gcc $(my_source_file) -o $(MY_DIR_BIN)/my_kernel_update
+	$(MY_DIR_BIN)/my_kernel_update 1.0.00
 

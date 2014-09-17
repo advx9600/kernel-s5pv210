@@ -21,7 +21,7 @@ static char gUbootVer[20];
 
 static int android_kernel_proc_show(struct seq_file *m, void *v)
 {
-	seq_printf(m, "kernel:?,u-boot:%s",gUbootVer);
+	seq_printf(m, "kernel=kernel:?,u-boot=%s",gUbootVer);
 	return 0;
 }
 

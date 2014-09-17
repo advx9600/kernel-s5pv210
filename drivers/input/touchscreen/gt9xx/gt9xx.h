@@ -1,4 +1,4 @@
-/* drivers/input/touchscreen/gt813_827_828.h
+/* drivers/input/touchscreen/gt9xx.h
  * 
  * 2010 - 2013 Goodix Technology.
  * 
@@ -15,8 +15,8 @@
  * 
  */
 
-#ifndef _LINUX_GOODIX_TOUCH_H
-#define _LINUX_GOODIX_TOUCH_H
+#ifndef _GOODIX_GT9XX_H_
+#define _GOODIX_GT9XX_H_
 
 #include <linux/kernel.h>
 #include <linux/hrtimer.h>
@@ -34,6 +34,40 @@
 #include <mach/gpio.h>
 #include <linux/earlysuspend.h>
 
+//***************************PART1:ON/OFF define*******************************
+#define GTP_CUSTOM_CFG        0
+#define GTP_CHANGE_X2Y        0
+#define GTP_DRIVER_SEND_CFG   0
+#define GTP_HAVE_TOUCH_KEY    0
+#define GTP_POWER_CTRL_SLEEP  0
+#define GTP_ICS_SLOT_REPORT   0
+
+#define GTP_AUTO_UPDATE       0    // auto update fw by .bin file as default
+#define GTP_HEADER_FW_UPDATE  0    // auto update fw by gtp_default_FW in gt9xx_firmware.h, function together with GTP_AUTO_UPDATE
+#define GTP_AUTO_UPDATE_CFG   0    // auto update config by .cfg file, function together with GTP_AUTO_UPDATE
+
+#define GTP_COMPATIBLE_MODE   0    // compatible with GT9XXF
+
+#define GTP_CREATE_WR_NODE    1
+#define GTP_ESD_PROTECT       0    // esd protection with a cycle of 2 seconds
+
+#define GTP_WITH_PEN          0
+#define GTP_PEN_HAVE_BUTTON   0    // active pen has buttons, function together with GTP_WITH_PEN
+
+#define GTP_GESTURE_WAKEUP    0    // gesture wakeup
+
+#define GTP_DEBUG_ON          0
+#define GTP_DEBUG_ARRAY_ON    0
+#define GTP_DEBUG_FUNC_ON     0
+
+#if GTP_COMPATIBLE_MODE
+typedef enum
+{
+    CHIP_TYPE_GT9  = 0,
+    CHIP_TYPE_GT9F = 1,
+} CHIP_TYPE_T;
+#endif
+
 struct goodix_ts_data {
     spinlock_t irq_lock;
     struct i2c_client *client;
@@ -48,38 +82,38 @@ struct goodix_ts_data {
     u8  max_touch_num;
     u8  int_trigger_type;
     u8  green_wake_mode;
-    u8  chip_type;
     u8  enter_update;
     u8  gtp_is_suspend;
     u8  gtp_rawdiff_mode;
     u8  gtp_cfg_len;
+    u8  fixed_cfg;
+    u8  fw_error;
+    u8  pnl_init_error;
+    
+#if GTP_WITH_PEN
+    struct input_dev *pen_dev;
+#endif
+
+#if GTP_ESD_PROTECT
+    spinlock_t esd_lock;
+    u8  esd_running;
+    s32 clk_tick_cnt;
+#endif
+
+#if GTP_COMPATIBLE_MODE
+    u16 bak_ref_len;
+    s32 ref_chk_fs_times;
+    s32 clk_chk_fs_times;
+    CHIP_TYPE_T chip_type;
+    u8 rqst_processing;
+    u8 is_950;
+#endif
+    
 };
 
 extern u16 show_len;
 extern u16 total_len;
 
-//***************************PART1:ON/OFF define*******************************
-#undef CONFIG_HAS_EARLYSUSPEND  // dafeng
-#define GTP_CUSTOM_CFG        0 
-#define GTP_CHANGE_X2Y        0 
-#define GTP_REVERSE_Y	      1 // dafeng
-#define GTP_DRIVER_SEND_CFG   1     
-#define GTP_HAVE_TOUCH_KEY    1
-#define GTP_POWER_CTRL_SLEEP  1
-#define GTP_ICS_SLOT_REPORT   1     
-
-#define GTP_AUTO_UPDATE       1 
-// firmware as an array instead of a bin file to search.
-// function only when GTP_AUTO_UPDATE is enabled.
-#define GTP_HEADER_FW_UPDATE  0     
-                                
-#define GTP_ESD_PROTECT       1     
-#define GTP_CREATE_WR_NODE    1     
-#define GTP_SLIDING_WAKEUP    0     
-
-#define GTP_DEBUG_ON          1
-#define GTP_DEBUG_ARRAY_ON    0
-#define GTP_DEBUG_FUNC_ON     0
 
 //*************************** PART2:TODO define **********************************
 // STEP_1(REQUIRED): Define Configuration Information Group(s)
@@ -94,39 +128,9 @@ extern u16 total_len;
 */
 // TODO: define your own default or for Sensor_ID == 0 config here. 
 // The predefined one is just a sample config, which is not suitable for your tp in most cases.
-#if 0
-#define CTP_CFG_GROUP1 { \
-    0x42,0xE0,0x01,0x20,0x03,0x05,0x14,0x01,0x02,0x08,\
-    0x19,0x00,0x50,0x28,0x03,0x03,0x00,0x00,0x00,0x00,\
-    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x90,0x00,0x0A,\
-    0x48,0x00,0xF3,0x0D,0x00,0x00,0x00,0x9A,0x02,0x2D,\
-    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,\
-    0x00,0x32,0x96,0x94,0x85,0x42,0x08,0x00,0x00,0xC1,\
-    0x11,0x1A,0xB3,0x15,0x1C,0xE6,0x1B,0x1C,0x0B,0x1E,\
-    0x1E,0x8D,0x20,0x21,0x00,0x00,0x10,0x28,0x48,0x00,\
-    0x5F,0x50,0x30,0xFF,0xFF,0x06,0x00,0x00,0x00,0x00,\
-    0x00,0x00,0x1C,0x96,0x64,0x0F,0x00,0x00,0x02,0x00,\
-    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,\
-    0x00,0x00,0x08,0x0A,0x0C,0x0E,0x10,0x12,0x14,0x16,\
-    0x18,0x1A,0xFF,0x00,0x00,0x00,0x00,0x00,0x00,0x00,\
-    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,\
-    0x00,0x00,0x00,0x02,0x04,0x05,0x06,0x08,0x0A,0x0C,\
-    0x1D,0x1E,0x1F,0x20,0x22,0x24,0x28,0x29,0xFF,0x00,\
-    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,\
-    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,\
-    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x14,0x1E,0x28,\
-    0x28,0x32,0x3C,0x3C,0x3C,0x50,0x50,0x50,0x32,0x50,\
-    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,\
-    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,\
-    0x00,0x00,0x00,0x00,0x00,0x00,0xDB,0x01\
-}
-#else
-
-#define CTP_CFG_GROUP1 { \
-0x46,0x00,0x04,0x58,0x02,0x05,0x38,0x00,0x01,0x3F,0x14,0x0F,0x4D,0x37,0x03,0x08,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x18,0x19,0x1F,0x14,0x8A,0x2A,0x0C,0x1A,0x1C,0x04,0x10,0x00,0x00,0x00,0x21,0x03,0x2D,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x32,0x96,0x94,0x02,0x05,0x08,0x00,0x00,0xD5,0x14,0x15,0xB1,0x1A,0x14,0x79,0x1B,0x18,0xC5,0x1F,0x1A,0x75,0x24,0x1C,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x18,0x16,0x14,0x12,0x10,0x0E,0x0C,0x0A,0x08,0x06,0x04,0x02,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0x24,0x22,0x21,0x20,0x1F,0x1E,0x1D,0x1C,0x18,0x16,0x13,0x12,0x10,0x0F,0x0A,0x08,0x06,0x04,0x02,0x00,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xC6,0x01\
-}
-#endif
-
+#define CTP_CFG_GROUP1 {\
+    }
+    
 // TODO: define your config for Sensor_ID == 1 here, if needed
 #define CTP_CFG_GROUP2 {\
     }
@@ -137,8 +141,7 @@ extern u16 total_len;
 
 // TODO: define your config for Sensor_ID == 3 here, if needed
 #define CTP_CFG_GROUP4 {\
-    }
-
+}
 // TODO: define your config for Sensor_ID == 4 here, if needed
 #define CTP_CFG_GROUP5 {\
     }
@@ -148,8 +151,8 @@ extern u16 total_len;
     }
 
 // STEP_2(REQUIRED): Customize your I/O ports & I/O operations
-#define GTP_RST_PORT    S5PV210_GPH2(4)
-#define GTP_INT_PORT    S5PV210_GPH2(3)
+#define GTP_RST_PORT    S5PV210_GPJ3(6)
+#define GTP_INT_PORT    S5PV210_GPH1(3)
 #define GTP_INT_IRQ     gpio_to_irq(GTP_INT_PORT)
 #define GTP_INT_CFG     S3C_GPIO_SFN(0xF)
 
@@ -169,8 +172,8 @@ extern u16 total_len;
 
 // STEP_3(optional): Specify your special config info if needed
 #if GTP_CUSTOM_CFG
-  #define GTP_MAX_HEIGHT   1024
-  #define GTP_MAX_WIDTH    600
+  #define GTP_MAX_HEIGHT   800
+  #define GTP_MAX_WIDTH    480
   #define GTP_INT_TRIGGER  0            // 0: Rising 1: Falling
 #else
   #define GTP_MAX_HEIGHT   4096
@@ -178,7 +181,6 @@ extern u16 total_len;
   #define GTP_INT_TRIGGER  1
 #endif
 #define GTP_MAX_TOUCH         5
-#define GTP_ESD_CHECK_CIRCLE  2000      // jiffy: ms
 
 // STEP_4(optional): If keys are available and reported as keys, config your key info here                             
 #if GTP_HAVE_TOUCH_KEY
@@ -186,14 +188,48 @@ extern u16 total_len;
 #endif
 
 //***************************PART3:OTHER define*********************************
-#define GTP_DRIVER_VERSION    "V1.6<2013/03/11>"
-#define GTP_I2C_NAME          "Goodix-TS"
-#define GTP_POLL_TIME         10     // jiffy: ms
+#define GTP_DRIVER_VERSION          "V2.2<2014/01/14>"
+#define GTP_I2C_NAME                "Goodix-TS"
+#define GT91XX_CONFIG_PROC_FILE     "gt9xx_config"
+#define GTP_POLL_TIME         10    
 #define GTP_ADDR_LENGTH       2
+#define GTP_CONFIG_MIN_LENGTH 186
 #define GTP_CONFIG_MAX_LENGTH 240
 #define FAIL                  0
 #define SUCCESS               1
+#define SWITCH_OFF            0
+#define SWITCH_ON             1
 
+//******************** For GT9XXF Start **********************//
+#define GTP_REG_BAK_REF                 0x99D0
+#define GTP_REG_MAIN_CLK                0x8020
+#define GTP_REG_CHIP_TYPE               0x8000
+#define GTP_REG_HAVE_KEY                0x804E
+#define GTP_REG_MATRIX_DRVNUM           0x8069     
+#define GTP_REG_MATRIX_SENNUM           0x806A
+
+#define GTP_FL_FW_BURN              0x00
+#define GTP_FL_ESD_RECOVERY         0x01
+#define GTP_FL_READ_REPAIR          0x02
+
+#define GTP_BAK_REF_SEND                0
+#define GTP_BAK_REF_STORE               1
+#define CFG_LOC_DRVA_NUM                29
+#define CFG_LOC_DRVB_NUM                30
+#define CFG_LOC_SENS_NUM                31
+
+#define GTP_CHK_FW_MAX                  40
+#define GTP_CHK_FS_MNT_MAX              300
+#define GTP_BAK_REF_PATH                "/data/gtp_ref.bin"
+#define GTP_MAIN_CLK_PATH               "/data/gtp_clk.bin"
+#define GTP_RQST_CONFIG                 0x01
+#define GTP_RQST_BAK_REF                0x02
+#define GTP_RQST_RESET                  0x03
+#define GTP_RQST_MAIN_CLOCK             0x04
+#define GTP_RQST_RESPONDED              0x00
+#define GTP_RQST_IDLE                   0xFF
+
+//******************** For GT9XXF End **********************//
 // Registers define
 #define GTP_READ_COOR_ADDR    0x814E
 #define GTP_REG_SLEEP         0x8040
@@ -204,8 +240,7 @@ extern u16 total_len;
 #define RESOLUTION_LOC        3
 #define TRIGGER_LOC           8
 
-#undef CONFIG_HAS_EARLYSUSPEND // dafeng
-
+#define CFG_GROUP_LEN(p_cfg_grp)  (sizeof(p_cfg_grp) / sizeof(p_cfg_grp[0]))
 // Log define
 #define GTP_INFO(fmt,arg...)           printk("<<-GTP-INFO->> "fmt"\n",##arg)
 #define GTP_ERROR(fmt,arg...)          printk("<<-GTP-ERROR->> "fmt"\n",##arg)
@@ -239,9 +274,7 @@ extern u16 total_len;
                                          x = y;\
                                          y = z;\
                                        }while (0)
-// add dafeng
-#define GTP_Y_REVERSE(y)		do{y=600-y-1;}while(0)
 
 //*****************************End of Part III********************************
 
-#endif /* _LINUX_GOODIX_TOUCH_H_ */
+#endif /* _GOODIX_GT9XX_H_ */

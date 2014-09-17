@@ -35,7 +35,9 @@
 #include <linux/earlysuspend.h>
 
 //***************************PART1:ON/OFF define*******************************
-#define GTP_CUSTOM_CFG        0
+#define GTP_REVERSE_Y 1  // dafeng
+#undef CONFIG_HAS_EARLYSUSPEND // dafeng
+#define GTP_CUSTOM_CFG        1
 #define GTP_CHANGE_X2Y        0
 #define GTP_DRIVER_SEND_CFG   0
 #define GTP_HAVE_TOUCH_KEY    0
@@ -56,7 +58,7 @@
 
 #define GTP_GESTURE_WAKEUP    0    // gesture wakeup
 
-#define GTP_DEBUG_ON          0
+#define GTP_DEBUG_ON          1
 #define GTP_DEBUG_ARRAY_ON    0
 #define GTP_DEBUG_FUNC_ON     0
 
@@ -151,8 +153,8 @@ extern u16 total_len;
     }
 
 // STEP_2(REQUIRED): Customize your I/O ports & I/O operations
-#define GTP_RST_PORT    S5PV210_GPJ3(6)
-#define GTP_INT_PORT    S5PV210_GPH1(3)
+#define GTP_RST_PORT    S5PV210_GPH2(4)
+#define GTP_INT_PORT    S5PV210_GPH2(3)
 #define GTP_INT_IRQ     gpio_to_irq(GTP_INT_PORT)
 #define GTP_INT_CFG     S3C_GPIO_SFN(0xF)
 
@@ -172,8 +174,8 @@ extern u16 total_len;
 
 // STEP_3(optional): Specify your special config info if needed
 #if GTP_CUSTOM_CFG
-  #define GTP_MAX_HEIGHT   800
-  #define GTP_MAX_WIDTH    480
+  #define GTP_MAX_HEIGHT   600
+  #define GTP_MAX_WIDTH    1024
   #define GTP_INT_TRIGGER  0            // 0: Rising 1: Falling
 #else
   #define GTP_MAX_HEIGHT   4096
@@ -274,6 +276,7 @@ extern u16 total_len;
                                          x = y;\
                                          y = z;\
                                        }while (0)
+#define GTP_Y_REVERSE(y) do{y=GTP_MAX_HEIGHT-y-1;}while(0)
 
 //*****************************End of Part III********************************
 

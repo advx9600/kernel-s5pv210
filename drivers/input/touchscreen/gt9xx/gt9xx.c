@@ -412,6 +412,10 @@ static void gtp_touch_down(struct goodix_ts_data* ts,s32 id,s32 x,s32 y,s32 w)
     GTP_SWAP(x, y);
 #endif
 
+#if GTP_REVERSE_Y
+ GTP_Y_REVERSE(y);
+#endif
+
 #if GTP_ICS_SLOT_REPORT
     input_mt_slot(ts->input_dev, id);
     input_report_abs(ts->input_dev, ABS_MT_TRACKING_ID, id);
@@ -1535,6 +1539,8 @@ static s32 gtp_init_panel(struct goodix_ts_data *ts)
 
     ts->gtp_cfg_len = GTP_CONFIG_MAX_LENGTH;
     ret = gtp_i2c_read(ts->client, config, ts->gtp_cfg_len + GTP_ADDR_LENGTH);
+    GTP_INFO("force gtp_i2c_read <0");
+    ret = -1;
     if (ret < 0)
     {
         GTP_ERROR("Read Config Failed, Using Default Resolution & INT Trigger!");
@@ -2894,7 +2900,7 @@ static const struct i2c_device_id goodix_ts_id[] = {
 static struct i2c_driver goodix_ts_driver = {
     .probe      = goodix_ts_probe,
     .remove     = goodix_ts_remove,
-#ifndef CONFIG_HAS_EARLYSUSPEND
+#ifdef CONFIG_HAS_EARLYSUSPEND
     .suspend    = goodix_ts_early_suspend,
     .resume     = goodix_ts_late_resume,
 #endif

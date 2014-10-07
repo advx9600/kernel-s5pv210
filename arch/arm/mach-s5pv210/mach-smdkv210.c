@@ -373,7 +373,7 @@ static struct s3c_ide_platdata smdkv210_ide_pdata __initdata = {
 #ifdef CONFIG_KEYBOARD_SAMSUNG
 static uint32_t smdkv210_keymap[] __initdata = {
 	/* KEY(row, col, keycode) */
-	KEY(0, 3, KEY_1), KEY(0, 4, KEY_2), KEY(0, 5, KEY_3),
+	KEY(1, 0, KEY_BACK), KEY(0, 4, KEY_2), KEY(0, 5, KEY_3),
 	KEY(0, 6, KEY_4), KEY(0, 7, KEY_5),
 	KEY(1, 3, KEY_A), KEY(1, 4, KEY_B), KEY(1, 5, KEY_C),
 	KEY(1, 6, KEY_D), KEY(1, 7, KEY_E), KEY(7, 1, KEY_LEFTBRACE)

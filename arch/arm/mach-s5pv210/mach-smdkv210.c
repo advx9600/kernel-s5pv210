@@ -1476,6 +1476,15 @@ static struct s3c64xx_spi_csinfo smdk_spi1_csi[] = {
 	},
 };
 
+#ifdef CONFIG_SERIAL_MAX3100
+#include <linux/serial_max3100.h>
+static struct plat_max3100 max3100_plat_data = {
+	.loopback = 0,
+	.crystal = 1, // 1:3.6864MHz 	0:1.8432MHz
+	.poll_time = 100,
+};
+#endif
+
 static struct spi_board_info s3c_spi_devs[] __initdata = {
 	{
 		.modalias        = "spidev", /* MMC SPI */
@@ -1486,6 +1495,18 @@ static struct spi_board_info s3c_spi_devs[] __initdata = {
 		.chip_select     = 0,
 		.controller_data = &smdk_spi0_csi[SMDK_MMCSPI_CS],
 	},
+	#ifdef CONFIG_SERIAL_MAX3100
+	{
+		.modalias      = "max3100",
+		.platform_data = &max3100_plat_data,
+		.irq           = S5PV210_GPH2(5),
+		.mode            = SPI_MODE_0,  /* CPOL=0, CPHA=0 */
+		.max_speed_hz  = 5*1000*1000,
+		.chip_select   =  0,
+		.bus_num         = 1,
+		.controller_data = &smdk_spi1_csi[SMDK_MMCSPI_CS],
+	},
+	#else
 	{
 		.modalias        = "spidev", /* MMC SPI */
 		.mode            = SPI_MODE_0,  /* CPOL=0, CPHA=0 */
@@ -1495,6 +1516,7 @@ static struct spi_board_info s3c_spi_devs[] __initdata = {
 		.chip_select     = 0,
 		.controller_data = &smdk_spi1_csi[SMDK_MMCSPI_CS],
 	},
+	#endif
 };
 
 #endif

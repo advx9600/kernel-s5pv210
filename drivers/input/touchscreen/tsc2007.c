@@ -57,6 +57,8 @@
 #define READ_X		(ADC_ON_12BIT | TSC2007_MEASURE_X)
 #define PWRDOWN		(TSC2007_12BIT | TSC2007_POWER_OFF_IRQ_EN)
 
+#define REVERSE_X	1  // dafeng
+
 struct ts_event {
 	u16	x;
 	u16	y;
@@ -207,12 +209,16 @@ static void tsc2007_work(struct work_struct *work)
 			ts->pendown = true;
 		}
 
+		#ifdef REVERSE_X
+		tc.x = MAX_12BIT-tc.x;
+		#endif
 		input_report_abs(input, ABS_X, tc.x);
 		input_report_abs(input, ABS_Y, tc.y);
 		input_report_abs(input, ABS_PRESSURE, rt);
 
 		input_sync(input);
 
+		printk("point(%4d,%4d), pressure (%4u)\n",tc.x, tc.y, rt);
 		dev_dbg(&ts->client->dev, "point(%4d,%4d), pressure (%4u)\n",
 			tc.x, tc.y, rt);
 
@@ -303,7 +309,7 @@ static int __devinit tsc2007_probe(struct i2c_client *client,
 	snprintf(ts->phys, sizeof(ts->phys),
 		 "%s/input0", dev_name(&client->dev));
 
-	input_dev->name = "TSC2007 Touchscreen";
+	input_dev->name = "tsc2007";
 	input_dev->phys = ts->phys;
 	input_dev->id.bustype = BUS_I2C;
 
@@ -318,7 +324,7 @@ static int __devinit tsc2007_probe(struct i2c_client *client,
 	if (pdata->init_platform_hw)
 		pdata->init_platform_hw();
 
-	err = request_irq(ts->irq, tsc2007_irq, 0,
+	err = request_irq(ts->irq, tsc2007_irq,IRQF_TRIGGER_FALLING,
 			client->dev.driver->name, ts);
 	if (err < 0) {
 		dev_err(&client->dev, "irq %d busy?\n", ts->irq);

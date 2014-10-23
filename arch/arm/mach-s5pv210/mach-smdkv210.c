@@ -1424,10 +1424,69 @@ static struct mpu3050_platform_data mpu_data = {
 #endif
 
 
+#ifdef CONFIG_TOUCHSCREEN_TSC2007
+#include <linux/i2c/tsc2007.h>
+#define TSC2007_INT_GPIO S5PV210_GPH2(0)
+// can't use gpio_to_irq,the same pin
+#define TSC2007_INT_GPIO_IRQ IRQ_EINT(16)
+static int tsc2007_hw_init(void)
+{
+	int err;
+
+	gpio_free(TSC2007_INT_GPIO);
+	err=gpio_request(TSC2007_INT_GPIO,"tsc2007 irq");
+	if(err){
+		pr_err("tsc2007 irqgpio request err\n");
+		return err;
+	}
+	err=gpio_direction_input(TSC2007_INT_GPIO);
+	if(err){
+		pr_err("tsc2007 irqgpio init input err %d\n",err);
+		gpio_free(TSC2007_INT_GPIO);
+		return err;
+	}
+	s3c_gpio_cfgpin(TSC2007_INT_GPIO,S3C_GPIO_SFN(0x0f));
+	s3c_gpio_setpull(TSC2007_INT_GPIO,S3C_GPIO_PULL_NONE);
+	//writel(readl(S5PV210_GPH2CON)|(0x0f<<16),S5PV210_GPH2CON);
+//	printk("tsc2007 gpio initok\n");
+	return 0;
+}
+
+static void tsc2007_hw_remove(void)
+{
+	s3c_gpio_cfgpin(TSC2007_INT_GPIO,S3C_GPIO_INPUT);
+	gpio_free(TSC2007_INT_GPIO);
+} 
+
+static int tsc2007_get_pandown_state(void)
+{
+	int dat;
+	//s3c_gpio_cfgpin(TSC2007_INT)
+	dat=gpio_get_value(TSC2007_INT_GPIO);
+//	printk("tsc2007 intpin:%X\n",dat);
+	return (dat==0)?1:0;
+}
+
+static struct tsc2007_platform_data tsc2007_data={
+	.model=2007,
+	.x_plate_ohms=180,//这个值看字面意思是x轴电阻，但找不到相关参数，就在网上随便搜了一个，按压力度计算的时候会用到。
+	.init_platform_hw=tsc2007_hw_init,
+	.exit_platform_hw=tsc2007_hw_remove,
+	.get_pendown_state=tsc2007_get_pandown_state,
+	//.clear_penirq
+}; 
+#endif
+
 static struct i2c_board_info smdkv210_i2c_devs0[] __initdata = {
 	{ I2C_BOARD_INFO("24c08", 0x50), },     /* Samsung S524AD0XD1 */
 	{ I2C_BOARD_INFO("wm8580", 0x1b), },
 	{ I2C_BOARD_INFO("Goodix-TS",0x5d),}, // gt813 or gt9xx
+	#ifdef CONFIG_TOUCHSCREEN_TSC2007
+	{ I2C_BOARD_INFO("tsc2007",(0x90>>1)),
+		.irq=TSC2007_INT_GPIO_IRQ,//gpio_to_irq(TSC2007_INT_GPIO),
+		.platform_data=&tsc2007_data,
+	}, 
+	#endif
 	#if defined(CONFIG_MPU_SENSORS_MPU3050) || defined(CONFIG_MPU_SENSORS_MPU3050_MODULE)
 	// liang
 	{

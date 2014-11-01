@@ -1433,7 +1433,7 @@ static int tsc2007_hw_init(void)
 {
 	int err;
 
-	gpio_free(TSC2007_INT_GPIO);
+//	gpio_free(TSC2007_INT_GPIO);
 	err=gpio_request(TSC2007_INT_GPIO,"tsc2007 irq");
 	if(err){
 		pr_err("tsc2007 irqgpio request err\n");

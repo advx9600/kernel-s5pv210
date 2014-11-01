@@ -63,9 +63,9 @@ static struct miscdevice misc = {
 static int __init dev_init(void)
 {
 	printk (DEVICE_NAME" initialized\n");
-	s3c_gpio_cfgpin(PIN485_1,PIN485_1_SETPIN);
+//	s3c_gpio_cfgpin(PIN485_1,PIN485_1_SETPIN);
 //	s3c_gpio_pullup(PIN485_1,1);
-	gpio_direction_output(PIN485_1,0); // default hight level
+//	gpio_direction_output(PIN485_1,0); // default hight level
 	misc_register(&misc);
 	Pin1=ioremap(UTRSTAT1,4);		// UTRSTAT1
 	printk(DEVICE_NAME" after ioremap\n");

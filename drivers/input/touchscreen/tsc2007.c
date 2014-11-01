@@ -26,6 +26,7 @@
 #include <linux/interrupt.h>
 #include <linux/i2c.h>
 #include <linux/i2c/tsc2007.h>
+#include "calibrate_a.h"
 
 #define TSC2007_MEASURE_TEMP0		(0x0 << 4)
 #define TSC2007_MEASURE_AUX		(0x2 << 4)
@@ -60,8 +61,8 @@
 #define REVERSE_X	1  // dafeng
 
 struct ts_event {
-	u16	x;
-	u16	y;
+	u32	x;
+	u32	y;
 	u16	z1, z2;
 };
 
@@ -152,6 +153,7 @@ static void tsc2007_send_up_event(struct tsc2007 *tsc)
 	input_report_key(input, BTN_TOUCH, 0);
 	input_report_abs(input, ABS_PRESSURE, 0);
 	input_sync(input);
+	set_my_calibrate(0);
 }
 
 static void tsc2007_work(struct work_struct *work)
@@ -207,18 +209,23 @@ static void tsc2007_work(struct work_struct *work)
 
 			input_report_key(input, BTN_TOUCH, 1);
 			ts->pendown = true;
+			set_my_calibrate(1);
 		}
 
 		#ifdef REVERSE_X
 		tc.x = MAX_12BIT-tc.x;
 		#endif
+
+		//printk("point(%4d,%4d), pressure (%4u) origin\n",tc.x, tc.y, rt);
+		ts_linear_scale(&tc.x,&tc.y,MAX_12BIT,MAX_12BIT);
+		printk("point(%4d,%4d), pressure (%4u)\n",tc.x, tc.y, rt);
+
 		input_report_abs(input, ABS_X, tc.x);
 		input_report_abs(input, ABS_Y, tc.y);
 		input_report_abs(input, ABS_PRESSURE, rt);
 
 		input_sync(input);
 
-		printk("point(%4d,%4d), pressure (%4u)\n",tc.x, tc.y, rt);
 		dev_dbg(&ts->client->dev, "point(%4d,%4d), pressure (%4u)\n",
 			tc.x, tc.y, rt);
 

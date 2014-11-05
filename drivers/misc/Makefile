@@ -53,3 +53,4 @@ obj-$(CONFIG_APANIC)		+= apanic.o
 obj-$(CONFIG_SENSORS_AK8975)	+= akm8975.o
 obj-y				+= mpu3050/
 obj-$(CONFIG_PIN_SELF_DEF)	+= pin_485.o  pin_watch_dog.o
+obj-y				+= pin_app_conf_0.o pin_app_conf_1.o pin_app_conf_2.o pin_app_conf_3.o pin_app_conf_4.o pin_app_conf_5.o pin_app_conf_6.o pin_app_conf_7.o pin_app_conf_8.o pin_app_conf_9.o

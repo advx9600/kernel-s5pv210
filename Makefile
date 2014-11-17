@@ -1578,7 +1578,7 @@ my_ver_mk_bin_dir := mkdir $(MY_DIR_BIN) &&
 endif
 
 my_ver_update:
-	./my_bin/version_update smdkv210 1.0.00 1
+	./my_bin/version_update smdkv210 1.0.00 kernel fs/proc/version.sample.c  fs/proc/version.c
 
 compress_zip:
-	python /home/abc/Public/git/linux/version_update/park.py smdkv210 1
+	python my_bin/zip_img.py smdkv210 kernel
